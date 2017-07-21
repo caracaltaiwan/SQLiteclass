@@ -1,8 +1,5 @@
 package com.example.sqliteclass;
 
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -10,11 +7,10 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-    final String DB_NAME = "test.db";
-    SQLiteDatabase db;
     TextView viewAll;
     Button btn;
-    SQLite dab;
+    SQLiteOH dbOH;
+    SQLite db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,78 +19,33 @@ public class MainActivity extends AppCompatActivity {
         viewAll = (TextView) findViewById(R.id.tv);
         btn = (Button) findViewById(R.id.button);
 
-        db = openOrCreateDatabase(DB_NAME,MODE_PRIVATE,null);
+        //SQLite的宣告
+        db = new SQLite(this, dbOH);//SQLiteOH的DB
+
         init();
-        upDataText();
+        viewAll.setText(db.QueryTable("AA")+"\n"+ db.QueryTable("BB"));//upDataText改成Cursorfat
         btn.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 init();
-                upDataText();
+                viewAll.setText(db.QueryTable("AA")+"\n"+ db.QueryTable("BB"));
                 return false;
             }
         });
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dropTable("t_user");
+                db.dropTable("AA");
+                db.dropTable("BB");
                 init();
-                upDataText();
+                viewAll.setText(db.QueryTable("BB")+"\n"+ db.QueryTable("BB"));
             }
         });
     }
 
     private void init() {
-        createTable();
-        insertTable("test");
-        insertTable("eddy");
+        db.createTable("AA","BB");
+        db.insertTable("AA","Hello");
+        db.insertTable("BB","你好");
     }
-
-    private void upDataText() {
-        StringBuffer sf = new StringBuffer();
-        Cursor cursor = loadAll();
-        cursor.moveToFirst();
-        while(!cursor.isAfterLast()){
-            sf.append(cursor.getInt(0)).append(":").append(cursor.getString(1)).append("\n");
-            cursor.moveToNext();
-        }
-        viewAll.setText(sf.toString());
-    }
-
-    private void createTable() {
-        try{
-            db.execSQL("CREATE TABLE t_user(_ID INTEGER PRIMARY KEY autoincrement,NAME TEXT);");
-        } catch (Exception e){
-
-        }
-    }
-
-    public Cursor loadAll(){
-        Cursor cursor = db.query("t_user",new String[]{"_ID","NAME"},null,null,null,null,null);
-        cursor = db.rawQuery("SELECT * from t_user",null);
-        return cursor;
-    }
-
-    private boolean insertTable(String database_name) {
-        String sql = "";
-        try{
-            sql = "insert into t_user values(null,'"+database_name+"')";
-            db.execSQL(sql);
-            return true;
-        } catch (Exception e){
-            return false;
-        }
-    }
-
-    private boolean dropTable(String tablename){
-        try {
-            String sql = "DROP TABLE "+tablename;
-            db.execSQL(sql);
-            return true;
-        } catch (SQLException e) {
-            return false;
-        }
-    }
-
-
 }
